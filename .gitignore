@@ -176,3 +176,4 @@ cython_debug/
 assistant_flow_recent.html
 config*.yaml
 !config.example.yaml
+.idea
