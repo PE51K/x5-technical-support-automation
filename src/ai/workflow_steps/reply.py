@@ -9,7 +9,7 @@ import openai
 async def reply(query_clean: str, qa: list[tuple[str, str]], clear_history: list[dict] = None) -> str:
     # Initialize AsyncOpenAI client
     llm = openai.AsyncOpenAI(
-        base_url=settings.llm.BASE_API,
+        base_url=settings.llm.API_BASE_URL,
         api_key=settings.llm.API_KEY,
     )
 
@@ -22,7 +22,7 @@ async def reply(query_clean: str, qa: list[tuple[str, str]], clear_history: list
         "Если примеры вопросов и ответов не содержат релевантной для запроса информации, не придумывай ответ, а дай знать пользователю."
     )
 
-    if settings.llm.MODEL == "Vikhrmodels/Vikhr-Nemo-12B-Instruct-R-21-09-24":
+    if settings.llm.MODEL_NAME == "Vikhrmodels/Vikhr-Nemo-12B-Instruct-R-21-09-24":
         # Format QA pairs as documents
         documents = []
         for idx, (q, a) in enumerate(qa):
@@ -40,7 +40,7 @@ async def reply(query_clean: str, qa: list[tuple[str, str]], clear_history: list
             {"role": "user", "content": query_clean},
         ])
 
-    elif settings.llm.MODEL == "google/gemma-2-9b-it":
+    elif settings.llm.MODEL_NAME == "google/gemma-2-9b-it":
         # For google/gemma-2-9b-it
         examples_text = ""
         for idx, (q, a) in enumerate(qa):
@@ -74,7 +74,7 @@ async def reply(query_clean: str, qa: list[tuple[str, str]], clear_history: list
 
     # Make async API call
     response = await llm.chat.completions.create(
-        model=settings.llm.MODEL,
+        model=settings.llm.MODEL_NAME,
         messages=messages,
         max_tokens=512,
         temperature=0.5,

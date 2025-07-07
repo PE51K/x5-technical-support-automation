@@ -1,12 +1,13 @@
 from llama_index.core.workflow import Context
 from ..workflow_events import PreprocessEvent, RetrieveEvent
+from qdrant_client.http.models import ScoredPoint
 
-from src.ai.retrieval import retrieval_manager
+from ai.retrieval import retrieval_manager
 
 
-def process_points(points: list[dict]) -> list[tuple[str, str]]:
+def process_points(points: list[ScoredPoint]) -> list[tuple[str, str]]:
     qa_tuples = [
-        (point["payload"]["question_clear"], point["payload"]["content_clear"])
+        (point.payload["question_clear"], point.payload["content_clear"])
         for point in points
     ]
     return qa_tuples
