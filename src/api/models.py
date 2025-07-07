@@ -5,9 +5,6 @@ from typing import Any, Dict, List, Optional
 # External library imports
 from pydantic import BaseModel
 
-# Internal module imports
-# (none in this module)
-
 
 # Configure module-level logging
 logger = logging.getLogger(__name__)
@@ -91,3 +88,4 @@ class ScoreResponse(BaseModel):
     success: bool
     message: Optional[str] = None
     error: Optional[str] = None
+    

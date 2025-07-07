@@ -6,9 +6,9 @@ import gradio as gr
 import uvicorn
 
 # Internal module imports
-from api import api_app
-from settings import settings
-from ui import ui_app
+from src.api import api_app
+from src.settings import settings
+from src.ui import ui_app
 
 
 # Configure module-level logging

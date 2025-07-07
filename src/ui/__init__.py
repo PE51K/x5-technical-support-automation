@@ -8,7 +8,7 @@ import gradio as gr
 import httpx
 
 # Internal module imports
-from settings import settings
+from src.settings import settings
 
 
 # Configure module-level logging
@@ -226,5 +226,6 @@ with gr.Blocks(title="X5", fill_height=True) as ui_app:
         [expected_output_input, submit_feedback_btn, feedback_message, feedback_storage],
         show_api=False
     )
+
 
 __all__ = ['ui_app']

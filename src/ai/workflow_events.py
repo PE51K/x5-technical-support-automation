@@ -4,9 +4,6 @@ import logging
 # External library imports
 from llama_index.core.workflow import Event
 
-# Internal module imports
-# (none in this module)
-
 
 # Configure module-level logging
 logger = logging.getLogger(__name__)

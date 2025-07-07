@@ -9,7 +9,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import PointStruct, VectorParams
 
 # Internal module imports
-from settings import settings
+from src.settings import settings
 
 
 # Configure module-level logging
@@ -86,6 +86,8 @@ class RetrievalManager:
         logger.debug(f"Generating embedding for text: {text[:50]}...")
         
         with httpx.Client() as client:
+            print(embedder_endpoint)
+            logger.warning(embedder_endpoint)
             response = client.post(embedder_endpoint, headers=headers, json=payload)
             response_data = response.json()
             

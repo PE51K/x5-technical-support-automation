@@ -6,7 +6,7 @@ from llama_index.core.workflow import Context
 from qdrant_client.http.models import ScoredPoint
 
 # Internal module imports
-from ai.retrieval import retrieval_manager
+from src.ai.retrieval import retrieval_manager
 from ..workflow_events import PreprocessEvent, RetrieveEvent
 
 

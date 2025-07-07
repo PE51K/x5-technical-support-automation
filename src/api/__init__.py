@@ -6,8 +6,8 @@ from fastapi import FastAPI, HTTPException
 from langfuse import Langfuse
 
 # Internal module imports
-from ai import run_workflow_with_tracing
-from settings import settings
+from src.ai import run_workflow_with_tracing
+from src.settings import settings
 from .models import ChatRequest, ChatResponse, ScoreRequest, ScoreResponse
 
 

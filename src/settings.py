@@ -17,7 +17,7 @@ class FastAPISettings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="FASTAPI_",
-        env_file="../env/.env",
+        env_file="./env/.env",
         extra='ignore'
     )
 
@@ -36,7 +36,7 @@ class LLMSettings(BaseSettings):
     
     model_config = SettingsConfigDict(
         env_prefix="LLM_", 
-        env_file="../env/.env",
+        env_file="./env/.env",
         extra='ignore'
     )
 
@@ -49,7 +49,7 @@ class EmbedderSettings(BaseSettings):
     
     model_config = SettingsConfigDict(
         env_prefix="EMBEDDER_",
-        env_file="../env/.env",
+        env_file="./env/.env",
         extra='ignore'
     )
 
@@ -63,7 +63,7 @@ class LangfuseSettings(BaseSettings):
     
     model_config = SettingsConfigDict(
         env_prefix="LANGFUSE_",
-        env_file="../env/.env",
+        env_file="./env/.env",
         extra='ignore'
     )
 
@@ -77,7 +77,7 @@ class QdrantSettings(BaseSettings):
     
     model_config = SettingsConfigDict(
         env_prefix="QDRANT_",
-        env_file="../env/.env",
+        env_file="./env/.env",
         extra='ignore'
     )
 

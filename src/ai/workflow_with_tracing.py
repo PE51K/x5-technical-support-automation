@@ -5,7 +5,7 @@ import logging
 from langfuse.llama_index import LlamaIndexInstrumentor
 
 # Internal module imports
-from settings import settings
+from src.settings import settings
 from .workflow import AssistantFlow
 
 
