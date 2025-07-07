@@ -64,7 +64,7 @@ class QdrantSettings(BaseSettings):
 
 
 class Settings(BaseSettings):
-    fastapi = FastAPISettings()
+    fastapi: FastAPISettings = FastAPISettings()
     llm: LLMSettings = LLMSettings()
     embedder: EmbedderSettings = EmbedderSettings()
     langfuse: LangfuseSettings = LangfuseSettings()

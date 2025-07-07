@@ -92,7 +92,7 @@ f"""
 
     # Call the API with guided_json in extra_body
     response = await llm.chat.completions.create(
-        MODEL_NAME=settings.llm.MODEL_NAME,
+        model=settings.llm.MODEL_NAME,
         messages=messages,
         temperature=0.0,
         extra_body={
