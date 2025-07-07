@@ -1,0 +1,26 @@
+name: Deploy via git-pull
+on:
+  push:
+    branches: [demo]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Pull latest code & restart stack
+        uses: appleboy/ssh-action@v1
+        with:
+          command_timeout: 1h
+          host:     ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key:      ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd ~/x5-technical-support-automation
+            git fetch --prune
+            git reset --hard origin/demo
+            docker compose up --env-file ./env/.env --build -d
