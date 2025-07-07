@@ -1,5 +1,5 @@
 import gradio as gr
-import requests
+import httpx
 import json
 from typing import List, Dict, Any
 import logging
@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # FastAPI backend URL
-API_BASE_URL = "http://localhost:8000/api"
+API_BASE_URL = "http://localhost:5555"
 
 def add_message(history: List[Dict[str, str]], message: str):
     """Add user message to chat history."""
@@ -33,12 +33,13 @@ async def bot(history: List[Dict[str, str]], clear_history: List[Dict[str, str]]
         }
         
         # Send request to FastAPI backend
-        response = requests.post(
-            f"{API_BASE_URL}/chat",
-            json=request_data,
-            headers={"Content-Type": "application/json"},
-            timeout=120
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{API_BASE_URL}/chat",
+                json=request_data,
+                headers={"Content-Type": "application/json"},
+                timeout=120
+            )
         
         if response.status_code == 200:
             result = response.json()
@@ -81,7 +82,7 @@ async def bot(history: List[Dict[str, str]], clear_history: List[Dict[str, str]]
         history.append(error_response)
         return history, clear_history
 
-def print_like_dislike(history: List[Dict[str, str]], x: gr.LikeData):
+async def print_like_dislike(history: List[Dict[str, str]], x: gr.LikeData):
     """Handle like/dislike feedback by sending to FastAPI backend."""
     try:
         if len(history) <= x.index:
@@ -103,12 +104,13 @@ def print_like_dislike(history: List[Dict[str, str]], x: gr.LikeData):
             "comment": None
         }
         
-        response = requests.post(
-            f"{API_BASE_URL}/set_score",
-            json=feedback_data,
-            headers={"Content-Type": "application/json"},
-            timeout=30
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{API_BASE_URL}/set_score",
+                json=feedback_data,
+                headers={"Content-Type": "application/json"},
+                timeout=30
+            )
         
         if response.status_code == 200:
             result = response.json()

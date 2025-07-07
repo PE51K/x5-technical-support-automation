@@ -17,4 +17,4 @@ app = gr.mount_gradio_app(api_app, ui_app, path="/gradio")
 
 if __name__ == "__main__":
     logger.info("Starting X5 Technical Support Automation server...")
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    uvicorn.run(app, host='0.0.0.0', port=5555)
