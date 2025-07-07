@@ -23,4 +23,4 @@ jobs:
             cd ~/x5-technical-support-automation
             git fetch --prune
             git reset --hard origin/demo
-            docker compose up --build -d
+            docker compose up --env-file ./env/.env --build -d

@@ -1,5 +1,5 @@
 """
-Script for Preprocessing Excel Dataset for LLM Evaluation
+Script for cleaning Excel Dataset with QA pairs
 
 This script reads an Excel file containing a dataset, processes the 'content' column by:
 - Lowercasing and stripping whitespace
@@ -10,13 +10,11 @@ The cleaned text is saved in a new column 'content_clear' and written back to an
 
 Dependencies:
 - pandas
-- re
 
 Usage:
-    python process_dataset.py
+    python clean_dataset.py
 """
 
-import re
 import pandas as pd
 
 

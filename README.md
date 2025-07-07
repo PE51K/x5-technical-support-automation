@@ -26,8 +26,8 @@
 
 
 ## Демо
-![alt text](assets/Screenshot_20250316_145851.png)
-![alt text](assets/slide1.png)
+![alt text](assets/gradio_screenshot.png)
+![alt text](assets/pitch_deck_first_slide.png)
 [Питч дек](https://docs.google.com/presentation/d/13u_uFyIiNPq9zfIsR0k9h7TdQb-Igl1ggD3D6oNo4Rc/edit?usp=sharing)
 
 
