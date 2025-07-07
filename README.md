@@ -44,7 +44,7 @@
 
 1. Установить [Docker и Docker Compose](https://docs.docker.com/compose/)
 2. Установить [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html), если планируется использовать GPU для запуска VLLM
-3. Скопировать файл `env/.env.example` в `env/.env` и заполнить переменные окружения. Тоже сделать для `env/.env.langfuse.example`. Пояснения к переменным можно найти в файле [`env/.env.example`](env/.env.example) и [`env/.env.langfuse.example`](env/.env.langfuse.example).
+3. Скопировать файл `env/.env.docker.example` в `env/.env` и заполнить переменные окружения. Тоже сделать для `env/.env.langfuse.example`. Пояснения к переменным можно найти в файле [`env/.env.docker.example`](env/.env.docker.example) и [`env/.env.langfuse.example`](env/.env.langfuse.example).
 ```
 cp env/.env.docker.example env/.env
 cp env/.env.langfuse.example env/.env.langfuse
