@@ -29,6 +29,12 @@ async def api_root():
     return {"message": "X5 Technical Support API", "version": "1.0.0"}
 
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy", "message": "X5 Technical Support API is running"}
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     """
