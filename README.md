@@ -36,7 +36,7 @@
 
 ![alt text](assets/gradio_screenshot.png)
 ![alt text](assets/pitch_deck_first_slide.png)
-[Питч дек](https://docs.google.com/presentation/d/13u_uFyIiNPq9zfIsR0k9h7TdQb-Igl1ggD3D6oNo4Rc/edit?usp=sharing)
+[Питч дек c AIWW](https://docs.google.com/presentation/d/13u_uFyIiNPq9zfIsR0k9h7TdQb-Igl1ggD3D6oNo4Rc/edit?usp=sharing)
 
 ## Запуск
 
