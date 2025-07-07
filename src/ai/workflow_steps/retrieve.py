@@ -1,46 +1,22 @@
 from llama_index.core.workflow import Context
 from ..workflow_events import PreprocessEvent, RetrieveEvent
-from settings import settings
 
-import aiohttp
-from qdrant_client import QdrantClient
+from src.ai.retrieval import retrieval_manager
 
-async def encode_query(query_clean: str) -> list[float]:
-    embedder_endpoint = f"{settings.embedder.API_BASE_URL}/embeddings"
-    headers = {"Content-Type": "application/json"}
-    data = {"model": settings.embedder.MODEL_NAME, "input": [query_clean]}
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            embedder_endpoint, headers=headers, json=data
-        ) as response:
-            raw = await response.json()
-            if response.status == 200:
-                return raw.get("data", [])[0].get("embedding", [])
-            raise Exception(f"Embeddings API error: {response.status} - {raw}")
-
-def retrieve_points(query_embedding: list[float]):
-    qdrant_client = QdrantClient(url=settings.qdrant.URL)
-    search_result = qdrant_client.query_points(
-        collection_name=settings.qdrant.QA_COLLECTION_NAME,
-        limit=settings.qdrant.TOP_N,
-        query=query_embedding,
-        with_payload=True,
-    ).points
-    return search_result
 
 def process_points(points: list[dict]) -> list[tuple[str, str]]:
     qa_tuples = [
-        (point.payload["question_clear"], point.payload["content_clear"])
+        (point["payload"]["question_clear"], point["payload"]["content_clear"])
         for point in points
     ]
     return qa_tuples
 
-async def retriever(query_clean: str) -> list[tuple[str, str]]:
-    query_embedding = await encode_query(query_clean)
-    search_result = retrieve_points(query_embedding)
-    search_result_clear = process_points(search_result)
+
+def retriever(query_clean: str) -> list[tuple[str, str]]:
+    points = retrieval_manager.retrieve(query_clean)
+    search_result_clear = process_points(points)
     return search_result_clear
+
 
 async def retrieve_step(ev: PreprocessEvent, ctx: Context) -> RetrieveEvent:
     query_clean = ev.query_clean
@@ -56,5 +32,5 @@ async def retrieve_step(ev: PreprocessEvent, ctx: Context) -> RetrieveEvent:
     concatenated_query = "\n".join([msg["content"] for msg in last_2_user_messages] + [query_clean])
     print("Query to retrieve:", concatenated_query)
     
-    qa = await retriever(concatenated_query)
+    qa = retriever(concatenated_query)
     return RetrieveEvent(qa=qa)
