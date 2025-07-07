@@ -3,8 +3,6 @@ FROM python:3.12-slim AS builder
 
 # ENV vars
 ENV PYTHONUNBUFFERED=1 \
-    GRADIO_SERVER_NAME=0.0.0.0 \
-    GRADIO_SERVER_PORT=7860 \
     PATH="/app/.venv/bin:$PATH"
 
 # Install uv
@@ -22,8 +20,8 @@ RUN uv sync --only-group prod
 # Copy the project
 COPY . .
 
-# Expose the port for Gradio
-EXPOSE 7860
+# Expose the port for FastAPI
+EXPOSE 8000
 
-# Run the Gradio app by default
-CMD ["python", "-m", "src.ui"]
+# Run the FastAPI app with mounted Gradio
+CMD ["python", "-m", "src.app_with_gradio"]

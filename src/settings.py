@@ -7,7 +7,7 @@ class LLMSettings(BaseSettings):
     
     model_config = SettingsConfigDict(
         env_prefix="VLLM_LLM_", 
-        env_file="./env/.env",
+        env_file="../env/.env",
         extra='ignore'
     )
 
@@ -17,7 +17,7 @@ class EmbeddingsSettings(BaseSettings):
     
     model_config = SettingsConfigDict(
         env_prefix="VLLM_EMB_",
-        env_file="./env/.env",
+        env_file="../env/.env",
         extra='ignore'
     )
 
@@ -28,7 +28,7 @@ class LangfuseSettings(BaseSettings):
     
     model_config = SettingsConfigDict(
         env_prefix="LANGFUSE_",
-        env_file="./env/.env",
+        env_file="../env/.env",
         extra='ignore'
     )
 
@@ -39,7 +39,7 @@ class QdrantSettings(BaseSettings):
     
     model_config = SettingsConfigDict(
         env_prefix="QDRANT_",
-        env_file="./env/.env",
+        env_file="../env/.env",
         extra='ignore'
     )
 

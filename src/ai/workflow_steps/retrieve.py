@@ -1,6 +1,6 @@
 from llama_index.core.workflow import Context
-from src.workflow_events import PreprocessEvent, RetrieveEvent
-from src.settings import settings
+from ..workflow_events import PreprocessEvent, RetrieveEvent
+from settings import settings
 
 import aiohttp
 from qdrant_client import QdrantClient

@@ -1,6 +1,6 @@
 from llama_index.core.workflow import Context, StopEvent
-from src.workflow_events import HasQAExamplesEvent
-from src.settings import settings
+from ..workflow_events import HasQAExamplesEvent
+from settings import settings
 
 import json
 import openai

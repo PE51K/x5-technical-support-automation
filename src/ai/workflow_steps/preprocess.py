@@ -1,5 +1,5 @@
 from llama_index.core.workflow import StartEvent
-from src.workflow_events import PreprocessEvent
+from ..workflow_events import PreprocessEvent
 
 import pandas as pd
 import re

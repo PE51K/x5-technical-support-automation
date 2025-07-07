@@ -6,7 +6,7 @@ from llama_index.core.workflow import (
     step,
 )
 
-from src.workflow_events import (
+from .workflow_events import (
     PreprocessEvent,
     RetrieveEvent,
     DeduplicateEvent,
@@ -14,12 +14,12 @@ from src.workflow_events import (
     HasQAExamplesEvent,
 )
 
-from src.workflow_steps.preprocess import preprocess_step
-from src.workflow_steps.retrieve import retrieve_step
-from src.workflow_steps.deduplicate import deduplicate_step
-from src.workflow_steps.sanity_check import sanity_check_step
-from src.workflow_steps.qa_examples import is_there_qa_examples_step
-from src.workflow_steps.reply import reply_step
+from .workflow_steps.preprocess import preprocess_step
+from .workflow_steps.retrieve import retrieve_step
+from .workflow_steps.deduplicate import deduplicate_step
+from .workflow_steps.sanity_check import sanity_check_step
+from .workflow_steps.qa_examples import is_there_qa_examples_step
+from .workflow_steps.reply import reply_step
 
 
 class AssistantFlow(Workflow):

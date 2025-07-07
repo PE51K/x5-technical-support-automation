@@ -1,4 +1,4 @@
-from src.workflow_events import (
+from ..workflow_events import (
     SanityCheckEvent,
     HasQAExamplesEvent,
 )

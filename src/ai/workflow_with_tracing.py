@@ -1,7 +1,7 @@
 from langfuse.llama_index import LlamaIndexInstrumentor
 
-from src.settings import settings
-from src.workflow import AssistantFlow
+from settings import settings
+from .workflow import AssistantFlow
 
 
 instrumentor = LlamaIndexInstrumentor(

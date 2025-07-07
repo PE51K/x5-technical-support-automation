@@ -1,6 +1,6 @@
 from llama_index.core.workflow import Context
-from src.workflow_events import DeduplicateEvent, SanityCheckEvent
-from src.settings import settings
+from ..workflow_events import DeduplicateEvent, SanityCheckEvent
+from settings import settings
 
 import json
 import openai

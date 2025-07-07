@@ -1,4 +1,4 @@
-from src.workflow_events import DeduplicateEvent, RetrieveEvent
+from ..workflow_events import DeduplicateEvent, RetrieveEvent
 
 async def deduplicate_step(ev: RetrieveEvent) -> DeduplicateEvent:
     qa = ev.qa
