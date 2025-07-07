@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 langfuse = Langfuse(
     public_key=settings.langfuse.PUBLIC_KEY,
     secret_key=settings.langfuse.SECRET_KEY,
-    host=settings.langfuse.HOST,
+    host=settings.langfuse.URL,
 )
 
 # Create FastAPI app

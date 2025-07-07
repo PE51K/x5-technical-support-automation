@@ -18,8 +18,8 @@ async def process_batch(
         "а '0' - что нерелевантен. Массив должен иметь ровно столько элементов, сколько документов в запросе."
     )
 
-    # If Vikhr model with documents role
-    if settings.llm.MODEL == "Vikhrmodels/Vikhr-Nemo-12B-Instruct-R-21-09-24":
+    # If Vikhr MODEL_NAME with documents role
+    if settings.llm.MODEL_NAME == "VikhrMODEL_NAMEs/Vikhr-Nemo-12B-Instruct-R-21-09-24":
         # Format QA pairs as documents
         documents = []
         for idx, (q, a) in enumerate(batch):
@@ -41,7 +41,7 @@ f"""
             },
         ]
     
-    elif settings.llm.MODEL == "google/gemma-2-9b-it":
+    elif settings.llm.MODEL_NAME == "google/gemma-2-9b-it":
         # For google/gemma-2-9b-it
         documents_text = ""
         for idx, (q, a) in enumerate(batch):
@@ -64,7 +64,7 @@ f"""
         ]
 
     else:
-        # For other models, format documents in prompt
+        # For other MODEL_NAMEs, format documents in prompt
         documents_text = ""
         for idx, (q, a) in enumerate(batch):
             documents_text += f"Документ {idx}:\nВопрос: {q}\nОтвет: {a}\n\n"
@@ -92,7 +92,7 @@ f"""
 
     # Call the API with guided_json in extra_body
     response = await llm.chat.completions.create(
-        model=settings.llm.MODEL,
+        MODEL_NAME=settings.llm.MODEL_NAME,
         messages=messages,
         temperature=0.0,
         extra_body={
@@ -133,7 +133,7 @@ async def sanity_check(
 ) -> list[tuple[str, str]]:
     # Initialize LLM with OpenAI interface
     llm = openai.AsyncOpenAI(
-        base_url=settings.llm.BASE_API,
+        base_url=settings.llm.API_BASE_URL,
         api_key=settings.llm.API_KEY,
     )
 

@@ -6,9 +6,9 @@ import aiohttp
 from qdrant_client import QdrantClient
 
 async def encode_query(query_clean: str) -> list[float]:
-    embedder_endpoint = f"{settings.embeddings.BASE_API}/embeddings"
+    embedder_endpoint = f"{settings.embedder.API_BASE_URL}/embeddings"
     headers = {"Content-Type": "application/json"}
-    data = {"model": settings.embeddings.MODEL, "input": [query_clean]}
+    data = {"model": settings.embedder.MODEL_NAME, "input": [query_clean]}
 
     async with aiohttp.ClientSession() as session:
         async with session.post(
@@ -22,7 +22,7 @@ async def encode_query(query_clean: str) -> list[float]:
 def retrieve_points(query_embedding: list[float]):
     qdrant_client = QdrantClient(url=settings.qdrant.URL)
     search_result = qdrant_client.query_points(
-        collection_name=settings.qdrant.COLLECTION_NAME,
+        collection_name=settings.qdrant.QA_COLLECTION_NAME,
         limit=settings.qdrant.TOP_N,
         query=query_embedding,
         with_payload=True,

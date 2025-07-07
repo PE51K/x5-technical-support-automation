@@ -1,30 +1,48 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-class LLMSettings(BaseSettings):
-    BASE_API: str
-    MODEL: str
-    API_KEY: str
-    
+
+class FastAPISettings(BaseSettings):
+    HOST: str
+    PORT: int
+
     model_config = SettingsConfigDict(
-        env_prefix="VLLM_LLM_", 
+        env_prefix="FASTAPI_",
         env_file="../env/.env",
         extra='ignore'
     )
 
-class EmbeddingsSettings(BaseSettings):
-    BASE_API: str
-    MODEL: str
+    @property
+    def url(self) -> str:
+        return f"http://{self.HOST}:{self.PORT}"
+
+
+class LLMSettings(BaseSettings):
+    API_BASE_URL: str
+    MODEL_NAME: str
+    API_KEY: str
     
     model_config = SettingsConfigDict(
-        env_prefix="VLLM_EMB_",
+        env_prefix="LLM_", 
         env_file="../env/.env",
         extra='ignore'
     )
+
+
+class EmbedderSettings(BaseSettings):
+    API_BASE_URL: str
+    MODEL_NAME: str
+    
+    model_config = SettingsConfigDict(
+        env_prefix="EMBEDDER_",
+        env_file="../env/.env",
+        extra='ignore'
+    )
+
 
 class LangfuseSettings(BaseSettings):
     PUBLIC_KEY: str
     SECRET_KEY: str
-    HOST: str
+    URL: str
     
     model_config = SettingsConfigDict(
         env_prefix="LANGFUSE_",
@@ -32,9 +50,10 @@ class LangfuseSettings(BaseSettings):
         extra='ignore'
     )
 
+
 class QdrantSettings(BaseSettings):
     URL: str
-    COLLECTION_NAME: str
+    QA_COLLECTION_NAME: str
     TOP_N: int
     
     model_config = SettingsConfigDict(
@@ -43,10 +62,14 @@ class QdrantSettings(BaseSettings):
         extra='ignore'
     )
 
+
 class Settings(BaseSettings):
+    fastapi = FastAPISettings()
     llm: LLMSettings = LLMSettings()
-    embeddings: EmbeddingsSettings = EmbeddingsSettings()
+    embedder: EmbedderSettings = EmbedderSettings()
     langfuse: LangfuseSettings = LangfuseSettings()
     qdrant: QdrantSettings = QdrantSettings()
 
+
+# Singleton instance of Settings
 settings = Settings()

@@ -24,7 +24,7 @@ async def run_workflow_with_tracing(
             user_id=user_id,
             metadata={
                 "query": query,
-                "llm": settings.llm.MODEL,
+                "llm": settings.llm.MODEL_NAME,
             },
         ):
             workflow = AssistantFlow(timeout=3 * 60)
