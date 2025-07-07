@@ -1,3 +1,3 @@
-from .chat import app
+from .api import api_app
 
-__all__ = ['app']
+__all__ = ['api_app']

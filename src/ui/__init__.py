@@ -1,3 +1,3 @@
-from .ui import demo
+from .ui import demo as ui_app
 
-__all__ = ['demo']
+__all__ = ['ui_app']
