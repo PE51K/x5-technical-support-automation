@@ -4,10 +4,10 @@ import json
 from typing import List, Dict, Any
 import logging
 
+from settings import settings
+
 logger = logging.getLogger(__name__)
 
-# FastAPI backend URL
-API_BASE_URL = "http://localhost:5555"
 
 def add_message(history: List[Dict[str, str]], message: str):
     """Add user message to chat history."""
@@ -35,7 +35,7 @@ async def bot(history: List[Dict[str, str]], clear_history: List[Dict[str, str]]
         # Send request to FastAPI backend
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{API_BASE_URL}/chat",
+                f"{settings.fastapi.URL}/chat",
                 json=request_data,
                 headers={"Content-Type": "application/json"},
                 timeout=120
@@ -106,7 +106,7 @@ async def print_like_dislike(history: List[Dict[str, str]], x: gr.LikeData):
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{API_BASE_URL}/set_score",
+                f"{settings.fastapi.URL}/set_score",
                 json=feedback_data,
                 headers={"Content-Type": "application/json"},
                 timeout=30

@@ -12,7 +12,7 @@ class FastAPISettings(BaseSettings):
     )
 
     @property
-    def url(self) -> str:
+    def URL(self) -> str:
         return f"http://{self.HOST}:{self.PORT}"
 
 
