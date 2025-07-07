@@ -43,8 +43,8 @@ async def reply(query_clean: str, qa: list[tuple[str, str]], clear_history: list
     elif settings.llm.MODEL == "google/gemma-2-9b-it":
         # For google/gemma-2-9b-it
         examples_text = ""
-        for idx, doc in enumerate(documents):
-            examples_text += f"Пример {idx+1}:\nВопрос: {doc['question']}\nОтвет: {doc['answer']}\n\n"
+        for idx, (q, a) in enumerate(qa):
+            examples_text += f"Пример {idx+1}:\nВопрос: {q}\nОтвет: {a}\n\n"
 
         # Add all messages and add system prompt to the first message and examples to last message
         messages = clear_history + [{"role": "user", "content": query_clean}]
@@ -54,8 +54,8 @@ async def reply(query_clean: str, qa: list[tuple[str, str]], clear_history: list
     else:
         # For other models, format documents in prompt
         examples_text = ""
-        for idx, doc in enumerate(documents):
-            examples_text += f"Пример {idx+1}:\nВопрос: {doc['question']}\nОтвет: {doc['answer']}\n\n"
+        for idx, (q, a) in enumerate(qa):
+            examples_text += f"Пример {idx+1}:\nВопрос: {q}\nОтвет: {a}\n\n"
         
         # Base messages with system prompt
         messages = [{"role": "system", "content": system_prompt}]

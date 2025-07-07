@@ -46,9 +46,9 @@ class AssistantFlow(Workflow):
 
     @step
     async def is_there_qa_examples(
-        self, ev: SanityCheckEvent
+        self, ev: SanityCheckEvent, ctx: Context
     ) -> HasQAExamplesEvent | StopEvent:
-        return await is_there_qa_examples_step(ev)
+        return await is_there_qa_examples_step(ev, ctx)
 
     @step
     async def reply(self, ev: HasQAExamplesEvent, ctx: Context) -> StopEvent:

@@ -21,19 +21,23 @@ async def bot(history: list, clear_history: list):
     msg = {"role": "assistant", "content": ""}
     query = history[-1]["content"]
 
-    try:
-        content, clear_query = await run_workflow_with_tracing(query, clear_history)
-        clear_history.append({"role": "user", "content": clear_query})
-        msg["content"] = content
+    content, clear_query = await run_workflow_with_tracing(query, clear_history)
+    clear_history.append({"role": "user", "content": clear_query})
+    msg["content"] = content
+
+    # try:
+    #     content, clear_query = await run_workflow_with_tracing(query, clear_history)
+    #     clear_history.append({"role": "user", "content": clear_query})
+    #     msg["content"] = content
         
-    except Exception as e:
-        error_message = (
-            "Произошла ошибка при обработке вашего запроса. "
-            "Пожалуйста, попробуйте позже или обратитесь в службу поддержки."
-        )
-        msg["content"] = error_message
-        # Log the actual error for debugging
-        print(f"Error processing query '{query}': {str(e)}")
+    # except Exception as e:
+    #     error_message = (
+    #         "Произошла ошибка при обработке вашего запроса. "
+    #         "Пожалуйста, попробуйте позже или обратитесь в службу поддержки."
+    #     )
+    #     msg["content"] = error_message
+    #     # Log the actual error for debugging
+    #     print(f"Error processing query '{query}': {str(e)}")
 
     # Append the assistant's response to the history and clear history
     history.append(msg)

@@ -90,3 +90,4 @@ venv/
 
 base_up/
 config*.yaml
+data

@@ -177,3 +177,5 @@ assistant_flow_recent.html
 config*.yaml
 !config.example.yaml
 .idea
+.env.langfuse
+/data

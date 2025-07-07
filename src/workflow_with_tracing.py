@@ -28,6 +28,12 @@ async def run_workflow_with_tracing(
             },
         ):
             workflow = AssistantFlow(timeout=3 * 60)
+            # result = await workflow.run(
+            #     query=query,
+            #     clear_history=clear_history,
+            # )
+            # print(result)
+            # raise
             response, clear_query = await workflow.run(
                 query=query,
                 clear_history=clear_history,
