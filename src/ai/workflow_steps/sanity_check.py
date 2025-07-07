@@ -1,15 +1,38 @@
-from llama_index.core.workflow import Context
-from ..workflow_events import DeduplicateEvent, SanityCheckEvent
-from settings import settings
-
-import json
-import openai
+# Standard library imports
 import asyncio
+import json
+import logging
 
-async def process_batch(
-    llm, query_clean: str, batch: list[tuple[str, str]], last_2_user_messages: list[dict]
+# External library imports
+import openai
+from llama_index.core.workflow import Context
+
+# Internal module imports
+from settings import settings
+from ..workflow_events import DeduplicateEvent, SanityCheckEvent
+
+
+# Configure module-level logging
+logger = logging.getLogger(__name__)
+
+
+async def process_qa_batch(
+    llm_client, query_clean: str, qa_batch: list[tuple[str, str]], 
+    previous_user_messages: list[dict]
 ) -> list[tuple[str, str]]:
-    """Process a single batch of QA pairs and return the relevant ones."""
+    """Process a single batch of QA pairs and return the relevant ones.
+    
+    Args:
+        llm_client: OpenAI client for LLM API calls
+        query_clean: Clean user query for relevance assessment
+        qa_batch: Batch of question-answer pairs to evaluate
+        previous_user_messages: Previous user messages for context
+        
+    Returns:
+        List of relevant question-answer pairs
+    """
+    logger.info(f"Processing batch of {len(qa_batch)} QA pairs for relevance")
+    
     # System prompt for grounded responses
     system_prompt = (
         "Твоя задача - определить, релевантны ли предоставленные документы запросу пользователя. "
@@ -18,80 +41,69 @@ async def process_batch(
         "а '0' - что нерелевантен. Массив должен иметь ровно столько элементов, сколько документов в запросе."
     )
 
-    # If Vikhr MODEL_NAME with documents role
-    if settings.llm.MODEL_NAME == "VikhrMODEL_NAMEs/Vikhr-Nemo-12B-Instruct-R-21-09-24":
-        # Format QA pairs as documents
-        documents = []
-        for idx, (q, a) in enumerate(batch):
-            documents.append({"doc_id": idx, "title": q, "content": a})
+    # Extract message contents for context
+    previous_messages_text = ", ".join([msg['content'] for msg in previous_user_messages])
 
-        # Create chat messages
+    # Build messages based on model type
+    if settings.llm.MODEL_NAME == "VikhrMODEL_NAMEs/Vikhr-Nemo-12B-Instruct-R-21-09-24":
+        # Format QA pairs as documents for Vikhr model
+        documents = []
+        for idx, (question, answer) in enumerate(qa_batch):
+            documents.append({"doc_id": idx, "title": question, "content": answer})
+
+        user_content = (
+            f"Прошлые сообщения пользователя: '{previous_messages_text}'. "
+            f"Запрос пользователя: '{query_clean}'. "
+            f"Оцени релевантность каждого документа к этому запросу с учетом контекста "
+            f"и верни массив из {len(qa_batch)} элементов, где каждый элемент - '0' или '1'."
+        )
+
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "documents", "content": json.dumps(documents, ensure_ascii=False)},
-            {
-                "role": "user",
-                "content": (
-f"""
-Прошлые сообщения пользователя: '{"', '".join([msg['content'] for msg in last_2_user_messages])}'.
-Запрос пользователя: '{query_clean}'. 
-Оцени релевантность каждого документа к этому запросу с учетом контекста и верни массив из {len(batch)} элементов, где каждый элемент - '0' или '1'.
-"""
-                ),
-            },
+            {"role": "user", "content": user_content}
         ]
     
     elif settings.llm.MODEL_NAME == "google/gemma-2-9b-it":
-        # For google/gemma-2-9b-it
+        # Format for Google Gemma model
         documents_text = ""
-        for idx, (q, a) in enumerate(batch):
-            documents_text += f"Документ {idx}:\nВопрос: {q}\nОтвет: {a}\n\n"
+        for idx, (question, answer) in enumerate(qa_batch):
+            documents_text += f"Документ {idx}:\nВопрос: {question}\nОтвет: {answer}\n\n"
 
-        # Create chat messages
+        user_content = (
+            f"{system_prompt}\n\n"
+            f"Документы:\n{documents_text}\n\n"
+            f"Прошлые сообщения пользователя: '{previous_messages_text}'. "
+            f"Запрос пользователя: '{query_clean}'. "
+            f"Оцени релевантность каждого документа к этому запросу с учетом контекста "
+            f"и верни массив из {len(qa_batch)} элементов, где каждый элемент - '0' или '1'."
+        )
+
         messages = [
-            {
-                "role": "user",
-                "content": (
-f"""
-{system_prompt}\n\n
-Документы:\n{documents_text}\n\n
-Прошлые сообщения пользователя: '{"', '".join([msg['content'] for msg in last_2_user_messages])}'.
-Запрос пользователя: '{query_clean}'. 
-Оцени релевантность каждого документа к этому запросу с учетом контекста и верни массив из {len(batch)} элементов, где каждый элемент - '0' или '1'.
-"""
-                ),
-            },
+            {"role": "user", "content": user_content}
         ]
 
     else:
-        # For other MODEL_NAMEs, format documents in prompt
+        # Default format for other models
         documents_text = ""
-        for idx, (q, a) in enumerate(batch):
-            documents_text += f"Документ {idx}:\nВопрос: {q}\nОтвет: {a}\n\n"
+        for idx, (question, answer) in enumerate(qa_batch):
+            documents_text += f"Документ {idx}:\nВопрос: {question}\nОтвет: {answer}\n\n"
 
-        # Create chat messages
+        user_content = (
+            f"Документы:\n{documents_text}\n\n"
+            f"Прошлые сообщения пользователя: '{previous_messages_text}'. "
+            f"Запрос пользователя: '{query_clean}'. "
+            f"Оцени релевантность каждого документа к этому запросу с учетом контекста "
+            f"и верни массив из {len(qa_batch)} элементов, где каждый элемент - '0' или '1'."
+        )
+
         messages = [
             {"role": "system", "content": system_prompt},
-            {
-                "role": "user",
-                "content": (
-f"""
-Документы:\n{documents_text}\n\n
-Прошлые сообщения пользователя: '{"', '".join([msg['content'] for msg in last_2_user_messages])}'.
-Запрос пользователя: '{query_clean}'. 
-Оцени релевантность каждого документа к этому запросу с учетом контекста и верни массив из {len(batch)} элементов, где каждый элемент - '0' или '1'.
-"""
-                ),
-            },
+            {"role": "user", "content": user_content}
         ]
 
-    print("\n--- Messages ---")
-    for i, msg in enumerate(messages):
-        print(f"{i}: {msg['role']} - {msg['content']}")
-
-
-    # Call the API with guided_json in extra_body
-    response = await llm.chat.completions.create(
+    # Call the LLM API with guided JSON output
+    response = await llm_client.chat.completions.create(
         model=settings.llm.MODEL_NAME,
         messages=messages,
         temperature=0.0,
@@ -103,66 +115,109 @@ f"""
         },
     )
 
-    # Extract response and parse scores
+    # Extract and parse response
     response_text = response.choices[0].message.content
-
-    print(response_text)
+    logger.info(f"Received LLM response: {response_text}")
+    
     scores = list(map(int, json.loads(response_text)))
+    logger.info(f"Parsed relevance scores: {scores}")
 
-    print(scores)
-
-    # Ensure the length is correct
-    if len(scores) != len(batch):
-        if len(scores) < len(batch):
+    # Ensure the length matches the batch size
+    if len(scores) != len(qa_batch):
+        if len(scores) < len(qa_batch):
             # If too short, extend with zeros
-            scores.extend([0] * (len(batch) - len(scores)))
+            scores.extend([0] * (len(qa_batch) - len(scores)))
         else:
             # If too long, truncate
-            scores = scores[: len(batch)]
+            scores = scores[:len(qa_batch)]
+        
+        logger.warning(f"Adjusted scores length from {len(json.loads(response_text))} to {len(scores)}")
 
-    # Add relevant QA pairs to results
-    filtered_qa = []
-    for (q, a), score in zip(batch, scores):
-        if score == 1:  # Check for integer value
-            filtered_qa.append((q, a))
+    # Filter QA pairs based on relevance scores
+    filtered_qa_pairs = []
+    for (question, answer), score in zip(qa_batch, scores):
+        if score == 1:
+            filtered_qa_pairs.append((question, answer))
 
-    return filtered_qa
+    relevant_count = len(filtered_qa_pairs)
+    logger.info(f"Found {relevant_count} relevant QA pairs out of {len(qa_batch)} in batch")
+    
+    return filtered_qa_pairs
 
-async def sanity_check(
-    query_clean: str, qa_pairs: list[tuple[str, str]], last_2_user_messages: list[dict]
+
+async def perform_sanity_check(
+    query_clean: str, qa_pairs: list[tuple[str, str]], previous_user_messages: list[dict]
 ) -> list[tuple[str, str]]:
-    # Initialize LLM with OpenAI interface
-    llm = openai.AsyncOpenAI(
+    """Perform sanity check on question-answer pairs for relevance.
+    
+    Args:
+        query_clean: Cleaned user query
+        qa_pairs: List of question-answer pairs to check
+        previous_user_messages: Previous user messages for context
+        
+    Returns:
+        List of relevant question-answer pairs
+    """
+    logger.info(f"Starting sanity check for {len(qa_pairs)} QA pairs")
+    
+    # Initialize LLM client
+    llm_client = openai.AsyncOpenAI(
         base_url=settings.llm.API_BASE_URL,
         api_key=settings.llm.API_KEY,
     )
 
-    # Process QA pairs in batches
-    batch_size = 10  # Adjust if needed
-
-    # Prepare batches
+    # Process QA pairs in batches for efficiency
+    batch_size = 10
     batches = [
-        qa_pairs[i : i + batch_size] for i in range(0, len(qa_pairs), batch_size)
+        qa_pairs[i:i + batch_size] for i in range(0, len(qa_pairs), batch_size)
     ]
+    
+    logger.info(f"Processing {len(batches)} batches of QA pairs")
 
     # Process all batches concurrently
-    tasks = [process_batch(llm, query_clean, batch, last_2_user_messages) for batch in batches]
-    results = await asyncio.gather(*tasks)
+    tasks = [
+        process_qa_batch(llm_client, query_clean, batch, previous_user_messages) 
+        for batch in batches
+    ]
+    batch_results = await asyncio.gather(*tasks)
 
-    # Flatten the results
-    filtered_qa = [item for sublist in results for item in sublist]
+    # Flatten results from all batches
+    filtered_qa_pairs = [item for sublist in batch_results for item in sublist]
+    
+    logger.info(f"Sanity check completed. {len(filtered_qa_pairs)} relevant QA pairs "
+                f"out of {len(qa_pairs)} total pairs")
+    
+    return filtered_qa_pairs
 
-    return filtered_qa
 
 async def sanity_check_step(ev: DeduplicateEvent, ctx: Context) -> SanityCheckEvent:
-    qa = ev.qa
+    """Execute the sanity check step for the workflow.
+    
+    This step evaluates the relevance of deduplicated QA pairs against the user query
+    using an LLM to filter out irrelevant content.
+    
+    Args:
+        ev: DeduplicateEvent containing deduplicated QA pairs
+        ctx: Context object for sharing data between workflow steps
+        
+    Returns:
+        SanityCheckEvent containing relevance-filtered QA pairs
+    """
+    qa_pairs = ev.qa
     query_clean = await ctx.get("query_clean")
     
-    # Get clear_history from context
+    logger.info("Starting sanity check step")
+    
+    # Get conversation history from context
     clear_history = await ctx.get("clear_history")
     
-    # Get last 2 user messages from clear_history
-    last_2_user_messages = [msg for msg in clear_history if msg["role"] == "user"][-2:]
+    # Extract last 2 user messages for context
+    previous_user_messages = [
+        msg for msg in clear_history if msg["role"] == "user"
+    ][-2:] if clear_history else []
     
-    sane_qa = await sanity_check(query_clean, qa, last_2_user_messages)
-    return SanityCheckEvent(qa=sane_qa)
+    # Perform relevance filtering
+    relevant_qa_pairs = await perform_sanity_check(query_clean, qa_pairs, previous_user_messages)
+    
+    logger.info("Sanity check step completed successfully")
+    return SanityCheckEvent(qa=relevant_qa_pairs)

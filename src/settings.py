@@ -1,7 +1,17 @@
+# Standard library imports
+import logging
+
+# External library imports
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+# Configure module-level logging
+logger = logging.getLogger(__name__)
+
+
 class FastAPISettings(BaseSettings):
+    """FastAPI server configuration settings."""
+    
     HOST: str
     PORT: int
 
@@ -13,10 +23,13 @@ class FastAPISettings(BaseSettings):
 
     @property
     def URL(self) -> str:
+        """Generate the FastAPI server URL from host and port."""
         return f"http://{self.HOST}:{self.PORT}"
 
 
 class LLMSettings(BaseSettings):
+    """Large Language Model configuration settings."""
+    
     API_BASE_URL: str
     MODEL_NAME: str
     API_KEY: str
@@ -29,6 +42,8 @@ class LLMSettings(BaseSettings):
 
 
 class EmbedderSettings(BaseSettings):
+    """Text embedding model configuration settings."""
+    
     API_BASE_URL: str
     MODEL_NAME: str
     
@@ -40,6 +55,8 @@ class EmbedderSettings(BaseSettings):
 
 
 class LangfuseSettings(BaseSettings):
+    """Langfuse tracing and monitoring configuration settings."""
+    
     PUBLIC_KEY: str
     SECRET_KEY: str
     URL: str
@@ -52,6 +69,8 @@ class LangfuseSettings(BaseSettings):
 
 
 class QdrantSettings(BaseSettings):
+    """Qdrant vector database configuration settings."""
+    
     URL: str
     QA_COLLECTION_NAME: str
     TOP_N: int
@@ -64,6 +83,8 @@ class QdrantSettings(BaseSettings):
 
 
 class Settings(BaseSettings):
+    """Main application settings container."""
+    
     fastapi: FastAPISettings = FastAPISettings()
     llm: LLMSettings = LLMSettings()
     embedder: EmbedderSettings = EmbedderSettings()
