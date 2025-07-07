@@ -1,6 +1,6 @@
 include:
   - path: 'docker-compose.langfuse.yaml'
-    env_file: '.env.langfuse'
+    env_file: './env/.env.langfuse'
 
 services:
   llm:
