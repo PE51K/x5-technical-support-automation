@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import FastAPI, HTTPException
 from langfuse import Langfuse
 import logging
 
@@ -15,10 +15,21 @@ langfuse = Langfuse(
     host=settings.langfuse.HOST,
 )
 
-router = APIRouter()
+# Create FastAPI app
+app = FastAPI(
+    title="X5 Technical Support API",
+    description="API for X5 technical support automation",
+    version="1.0.0"
+)
 
 
-@router.post("/chat", response_model=ChatResponse)
+@app.get("/")
+async def api_root():
+    """API root endpoint."""
+    return {"message": "X5 Technical Support API", "version": "1.0.0"}
+
+
+@app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     """
     Process chat message and return response using the AI workflow.
@@ -70,7 +81,7 @@ async def chat_endpoint(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/set_score", response_model=ScoreResponse)
+@app.post("/set_score", response_model=ScoreResponse)
 async def set_score_endpoint(request: ScoreRequest):
     """
     Set score for user feedback and create dataset item in Langfuse.

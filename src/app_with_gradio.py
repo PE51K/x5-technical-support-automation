@@ -4,7 +4,7 @@ import gradio as gr
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api import router as api_router
+from api import app as api_app
 from ui import demo
 
 # Configure logging
@@ -30,8 +30,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API router
-app.include_router(api_router, prefix="/api", tags=["api"])
+# Mount API app
+app.mount("/api", api_app)
 
 # Mount Gradio app
 app = gr.mount_gradio_app(app, demo, path="/")
