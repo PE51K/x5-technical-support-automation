@@ -23,9 +23,11 @@ class ChatResponse(BaseModel):
 
 
 class ScoreRequest(BaseModel):
-    trace_id: str
     score_name: str = "user-feedback"
-    score_value: float  # 1.0 for like, 0.0 for dislike
+    question: str  # The user's original question (input)
+    answer: str    # The assistant's response (output)
+    user_liked: bool  # True for like, False for dislike
+    expected_output: Optional[str] = None  # What the user thinks the response should be (optional)
     comment: Optional[str] = None
 
 

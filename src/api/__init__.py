@@ -14,6 +14,7 @@ langfuse = Langfuse(
     secret_key=settings.langfuse.SECRET_KEY,
     host=settings.langfuse.URL,
 )
+langfuse.create_dataset("qa")
 
 # Create FastAPI app
 api_app = FastAPI(
@@ -93,52 +94,36 @@ async def set_score_endpoint(request: ScoreRequest):
     Set score for user feedback and create dataset item in Langfuse.
     """
     try:
-        logger.info(f"Received score request for trace {request.trace_id}: {request.score_value}")
+        # Prepare metadata
+        metadata = {
+            "llm_model_name": settings.llm.MODEL_NAME,
+            "user_liked": request.user_liked
+        }
         
-        # Create dataset item in Langfuse (similar to original print_like_dislike function)
-        # Note: This requires getting the original question and answer from the trace
-        # For now, we'll create a simple score entry
+        if request.comment:
+            metadata["comment"] = request.comment
         
-        # You may need to store the Q&A pairs separately or retrieve them from Langfuse
-        # For this implementation, we'll just log the feedback
+        # Determine expected_output based on user feedback
+        expected_output = None
+        if request.user_liked:
+            # If user liked -> write assistant's output to expected_output
+            expected_output = request.answer
+        elif request.expected_output and request.expected_output.strip():
+            # If user disliked and provided suggestion -> write user's suggestion to expected_output
+            expected_output = request.expected_output
         
-        feedback_type = "positive" if request.score_value > 0.5 else "negative"
+        # Create dataset item
+        langfuse.create_dataset_item(
+            dataset_name="qa",
+            input=request.question,
+            expected_output=expected_output,
+            metadata=metadata
+        )
         
-        # Create dataset item (you may need to adjust this based on your Langfuse setup)
-        try:
-            # This is a simplified version - you may need to retrieve actual Q&A from trace
-            dataset_item_data = {
-                "dataset_name": "qa",
-                "metadata": {
-                    "feedback": feedback_type,
-                    "score": request.score_value,
-                    "trace_id": request.trace_id
-                }
-            }
-            
-            if request.comment:
-                dataset_item_data["metadata"]["comment"] = request.comment
-            
-            # Log for now - you can implement actual Langfuse dataset creation here
-            logger.info(f"Dataset item data: {dataset_item_data}")
-            
-            return ScoreResponse(
-                success=True,
-                message=f"Score {request.score_value} recorded for trace {request.trace_id}"
-            )
-            
-        except Exception as langfuse_error:
-            logger.error(f"Langfuse error: {langfuse_error}")
-            return ScoreResponse(
-                success=False,
-                error=f"Failed to create dataset item: {str(langfuse_error)}"
-            )
+        return ScoreResponse(success=True, message="Dataset item created successfully")
         
     except Exception as e:
-        logger.exception(f"Error setting score: {e}")
-        return ScoreResponse(
-            success=False,
-            error=str(e)
-        )
+        logger.exception(f"Error creating dataset item: {e}")
+        return ScoreResponse(success=False, error=str(e))
 
 __all__ = ['api_app']

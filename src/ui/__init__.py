@@ -82,25 +82,83 @@ async def bot(history: List[Dict[str, str]], clear_history: List[Dict[str, str]]
         history.append(error_response)
         return history, clear_history
 
+# Global storage for feedback data
+feedback_storage = {}
+
 async def print_like_dislike(history: List[Dict[str, str]], x: gr.LikeData):
     """Handle like/dislike feedback by sending to FastAPI backend."""
     try:
         if len(history) <= x.index:
             logger.error(f"Invalid index {x.index} for history length {len(history)}")
-            return
+            return gr.Textbox(visible=False), gr.Button(visible=False), gr.Markdown(visible=False)
         
         # Get question and answer from history
         q = history[x.index - 1]["content"] if x.index > 0 else ""
         a = history[x.index]["content"]
         
-        # Determine score value
-        score_value = 1.0 if x.liked else 0.0
+        # If user liked, send feedback immediately
+        if x.liked:
+            feedback_data = {
+                "score_name": "user-feedback",
+                "question": q,
+                "answer": a,
+                "user_liked": True,
+                "expected_output": None,
+                "comment": None
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{settings.fastapi.URL}/set_score",
+                    json=feedback_data,
+                    headers={"Content-Type": "application/json"},
+                    timeout=30
+                )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("success"):
+                    logger.info(f"Positive feedback sent successfully")
+                else:
+                    logger.error(f"Failed to send feedback: {result.get('error')}")
+            else:
+                logger.error(f"API error sending feedback: {response.status_code}")
+            
+            return gr.Textbox(visible=False), gr.Button(visible=False), gr.Markdown(visible=False)
         
-        # Send feedback to API
+        # If user disliked, store feedback data and show input for preferred answer
+        else:
+            feedback_storage["question"] = q
+            feedback_storage["answer"] = a
+            feedback_storage["user_liked"] = False
+            
+            return (
+                gr.Textbox(
+                    placeholder="Как должен был ответить бот? (необязательно)",
+                    visible=True,
+                    value="",
+                    label="Ваш предпочтительный ответ"
+                ),
+                gr.Button("Отправить отзыв", visible=True),
+                gr.Markdown(visible=False)
+            )
+            
+    except Exception as e:
+        logger.exception(f"Error in like/dislike handler: {e}")
+        return gr.Textbox(visible=False), gr.Button(visible=False), gr.Markdown(visible=False)
+
+async def submit_dislike_feedback(expected_output: str):
+    """Submit dislike feedback with expected output."""
+    try:
+        if not feedback_storage:
+            return gr.Textbox(visible=False), gr.Button(visible=False), gr.Markdown("Ошибка: нет данных для отправки", visible=True)
+        
         feedback_data = {
-            "trace_id": f"gradio-feedback-{x.index}",  # You may want to use actual trace IDs
             "score_name": "user-feedback",
-            "score_value": score_value,
+            "question": feedback_storage["question"],
+            "answer": feedback_storage["answer"],
+            "user_liked": False,
+            "expected_output": expected_output if expected_output.strip() else None,
             "comment": None
         }
         
@@ -115,14 +173,19 @@ async def print_like_dislike(history: List[Dict[str, str]], x: gr.LikeData):
         if response.status_code == 200:
             result = response.json()
             if result.get("success"):
-                logger.info(f"Feedback sent successfully: {score_value}")
+                logger.info(f"Dislike feedback sent successfully")
+                feedback_storage.clear()
+                return gr.Textbox(visible=False), gr.Button(visible=False), gr.Markdown("Спасибо за отзыв!", visible=True)
             else:
                 logger.error(f"Failed to send feedback: {result.get('error')}")
+                return gr.Textbox(visible=False), gr.Button(visible=False), gr.Markdown("Ошибка при отправке", visible=True)
         else:
             logger.error(f"API error sending feedback: {response.status_code}")
+            return gr.Textbox(visible=False), gr.Button(visible=False), gr.Markdown("Ошибка при отправке", visible=True)
             
     except Exception as e:
-        logger.exception(f"Error sending feedback: {e}")
+        logger.exception(f"Error sending dislike feedback: {e}")
+        return gr.Textbox(visible=False), gr.Button(visible=False), gr.Markdown("Ошибка при отправке", visible=True)
 
 # Create Gradio interface
 with gr.Blocks(title="X5", fill_height=True) as ui_app:
@@ -150,6 +213,15 @@ with gr.Blocks(title="X5", fill_height=True) as ui_app:
         submit_btn=True,
     )
 
+    # Components for dislike feedback (initially hidden)
+    expected_output_input = gr.Textbox(
+        placeholder="Как должен был ответить бот? (необязательно)",
+        visible=False,
+        label="Ваш предпочтительный ответ"
+    )
+    submit_feedback_btn = gr.Button("Отправить отзыв", visible=False)
+    feedback_message = gr.Markdown(visible=False)
+
     clear = gr.ClearButton([chat_input, chatbot], value="Очистить")
 
     chat_msg = chat_input.submit(
@@ -157,7 +229,21 @@ with gr.Blocks(title="X5", fill_height=True) as ui_app:
     )
     bot_msg = chat_msg.then(bot, [chatbot, clear_history], [chatbot, clear_history], api_name="bot_response")
 
-    chatbot.like(print_like_dislike, chatbot, None, show_api=False)
+    # Handle like/dislike with conditional UI for dislike
+    chatbot.like(
+        print_like_dislike,
+        chatbot,
+        [expected_output_input, submit_feedback_btn, feedback_message],
+        show_api=False
+    )
+    
+    # Handle dislike feedback submission
+    submit_feedback_btn.click(
+        submit_dislike_feedback,
+        expected_output_input,
+        [expected_output_input, submit_feedback_btn, feedback_message],
+        show_api=False
+    )
 
 # Export the ui_app for mounting in FastAPI
 __all__ = ['ui_app']
