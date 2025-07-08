@@ -1,7 +1,30 @@
-import pandas as pd
+"""
+Script for preprocessing text data in a dataset
+
+This script provides functions to preprocess text, including:
+- Lowercasing and stripping whitespace
+- Replacing emails, links, and phone numbers with placeholders
+- Removing extra spaces inside the text
+- Expanding glossary abbreviations to full forms
+- Removing greetings, polite words, self-introductions, question words, request verbs, profanity, and role-related words
+- Tokenizing and normalizing words using pymorphy3
+
+Dependencies:
+- pandas
+- pymorphy3
+
+Usage:
+    Import and use the preprocess(text) function in your data pipeline.
+"""
+
 import re
+
+import pandas as pd
 import pymorphy3
+
+
 morph = pymorphy3.MorphAnalyzer()
+
 
 def clear_spaces_inside(text):
     words = text.split()
@@ -9,6 +32,7 @@ def clear_spaces_inside(text):
     text_clear = ' '.join(words)
 
     return text_clear
+
 
 def preprocess(text):
   

@@ -6,7 +6,8 @@
 ```
 .
 ├── data_processing
-│   └── clean_dataset.py # Скрипт для очистки текстов в датасете с примерами вопросов и ответов
+│   ├── process_data.py # Скрипт для очистки текстов в датасете с примерами вопросов и ответов (тестовый вариант)
+│   └── process_data_final.py # Скрипт для очистки текстов в датасете с примерами вопросов и ответов (финальный вариант)
 ├── evaluation
 │   ├── deepeval_answer_relevancy.ipynb # Jupyter Notebook для оценки answer relevancy ответов модели из LangFuse трейсов с использованием DeepEval
 │   └── deepeval_contextual_relevancy.py # Скрипт для оценки contextual relevancy ответов модели из LangFuse трейсов с использованием DeepEval
